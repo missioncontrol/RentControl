@@ -29,7 +29,6 @@ class Home:
             self.cheapest_rooms.append(rent)
         else:
             r = rent.price / len(rent.deets.occupied_by)
-            print self.cheapest_rooms
             cr = self.cheapest_rooms[0].price / len(self.cheapest_rooms[0].deets.occupied_by)
             if cr > r:
                 self.cheapest_rooms = [rent]
