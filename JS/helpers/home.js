@@ -1,4 +1,4 @@
-/*global rooms, console, moneyRound */
+/*global rooms, console, defaultRooms, moneyRound, convertItem */
 
 var defaults = {
   attributeTableId: 'house-attribute-table',
@@ -16,6 +16,7 @@ var defaults = {
   commonWeight: 0.60,
   houseSize: 6200,
   rentSum: 18000,
+  rooms: defaultRooms,
   roundDollar: true
 };
 
@@ -31,6 +32,7 @@ function Home(options) {
   this.commonWeight = options.commonWeight || defaults.commonWeight;
   this.houseSize = options.houseSize || defaults.houseSize;
   this.rentSum = options.rentSum || defaults.rentSum;
+  this.rooms = options.rooms || defaults.rooms;
   this.roundDollar = options.roundDollar || defaults.roundDollar;
   this.feesAndDeducts = options.feesAndDeducts || defaults.feesAndDeducts;
   
@@ -52,9 +54,7 @@ function Home(options) {
   }
   
   this.populateAttributeTable(this.attributeTableId, this);
-  this.populateAttributeTable('fees-attribute-table', this.feesAndDeducts);
-  
-  console.log(this);
+  this.populateAttributeTable(this.attributeTableId, this.feesAndDeducts);
 }
 
 Home.prototype.setCheapestRoom = function (room) {
@@ -146,8 +146,8 @@ Home.prototype.setOpposingFeeOrDeduction = function (name, feeDuct) {
 Home.prototype.fillHouse = function () {
   'use strict';
   /* TODO: check/grab rooms from structured screen before falling back on defaults */
-  if (rooms !== undefined) {
-    this.rooms = rooms;
+  if (this.rooms !== undefined) {
+    this.rooms = defaultRooms;
   }
 };
 
@@ -177,6 +177,7 @@ Home.prototype.calculateRoomSqftCosts = function () {
 Home.prototype.populateAttributeTable = function (tableId, attributes) {
   'use strict';
   var attributeTable = document.getElementById(tableId),
+    dontPrint = ['attributeTableId'],
     row,
     cell,
     attribute,
@@ -189,15 +190,15 @@ Home.prototype.populateAttributeTable = function (tableId, attributes) {
   }
   function insertRow(table, index, cells) {
     row = table.insertRow(index);
+    cells[1] = convertItem(cells[0], cells[1]);
     for (cellIndex = 0; cellIndex < cells.length; cellIndex += 1) {
       insertCell(row, cellIndex, cells[cellIndex]);
     }
   }
-  console.log(tableId);
+  
   for (attribute in attributes) {
     if (attributes.hasOwnProperty(attribute)) {
-      if (typeof attributes[attribute] !== 'object') {
-        console.log(attributeTable, tableId, attribute);
+      if (!dontPrint.includes(attribute) && (typeof attributes[attribute] !== 'object')) {
         insertRow(attributeTable, rowIndex, [attribute, attributes[attribute]]);
         rowIndex += 1;
       }
