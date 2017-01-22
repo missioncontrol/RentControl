@@ -3,11 +3,11 @@
 function buildHome() {
   'use strict';
   var rooms = getRoomsFromTables(),
-    homes = new Home({
+    home = new Home({
       rooms: rooms
     });
     //calculator = new Calculator(homes);
-  getRoomsFromTables();
+  home.getAttributesFromTable();
 }
 
 document.addEventListener('DOMContentLoaded', buildHome, false);

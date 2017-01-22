@@ -15,6 +15,10 @@ td {
   width: 200px;
 }
 
+input {
+  width: 100%;
+}
+
 #attributes {
   display: inline-block;
 }

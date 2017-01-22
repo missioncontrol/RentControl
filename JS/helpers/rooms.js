@@ -1,4 +1,4 @@
-/*global console, parseItem */
+/*global console, getPropertyName, getText, parseItem */
 
 function createRoomsFromDefaults() {
   'use strict';
@@ -19,8 +19,9 @@ function getRoomsFromTables() {
       rooms[roomId] = {};
       for (tr = 1; tr < tables[table].rows.length; tr += 1) {
         if (tables[table].rows.hasOwnProperty(tr)) {
-          tdName = tables[table].rows[tr].children[0].textContent;
-          tdContent = parseItem(tdName, tables[table].rows[tr].children[1].textContent);
+          tdName = getPropertyName(tables[table].rows[tr].children[0].textContent);
+          tdContent = getText(tables[table].rows[tr].children[1]);
+          tdContent = parseItem(tdName, tdContent);
           rooms[roomId][tdName] = tdContent;
         }
       }
