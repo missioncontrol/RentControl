@@ -59,7 +59,9 @@ class Home:
     # Takes in a decimal representing the percent weight of the common space that
     #   will factor into rent.
     def calculate_common_attrs(self):
-        self.common_space = self.house_size - sum([room.sqft for room in self.rooms.values()])
+        self.common_space = self.house_size - sum(
+            [(room.sqft * room.percent_usable) for room in self.rooms.values()]
+        )
         common_share = self.common_space/self.peeps_count
         self.common_cost_per_sqft = self.rent_sum/self.house_size * self.common_weight
         self.common_share_cost = round(common_share * self.common_cost_per_sqft, 2)
