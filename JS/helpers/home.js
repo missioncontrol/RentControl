@@ -1,4 +1,4 @@
-/*global rooms, console, moneyRound */
+/*global rooms, console, defaultRooms, dataType, getPropertyName, getDisplayName, moneyRound, convertItem */
 
 var defaults = {
   attributeTableId: 'house-attribute-table',
@@ -16,8 +16,14 @@ var defaults = {
   commonWeight: 0.60,
   houseSize: 6200,
   rentSum: 18000,
+  rooms: defaultRooms,
   roundDollar: true
 };
+
+var EDITABLE_FIELDS = [
+  'calculateAsSingles', 'cheapestRoomMustBeSingle', 'commonWeight',
+  'rentSum', 'roundDollar'
+];
 
 function Home(options) {
   'use strict';
@@ -31,6 +37,7 @@ function Home(options) {
   this.commonWeight = options.commonWeight || defaults.commonWeight;
   this.houseSize = options.houseSize || defaults.houseSize;
   this.rentSum = options.rentSum || defaults.rentSum;
+  this.rooms = options.rooms || defaults.rooms;
   this.roundDollar = options.roundDollar || defaults.roundDollar;
   this.feesAndDeducts = options.feesAndDeducts || defaults.feesAndDeducts;
   
@@ -51,10 +58,8 @@ function Home(options) {
     }
   }
   
-  this.populateAttributeTable(this.attributeTableId, this);
-  this.populateAttributeTable('fees-attribute-table', this.feesAndDeducts);
-  
-  console.log(this);
+  this.populateAttributeTable(this);
+  this.populateAttributeTable(this.feesAndDeducts);
 }
 
 Home.prototype.setCheapestRoom = function (room) {
@@ -146,8 +151,8 @@ Home.prototype.setOpposingFeeOrDeduction = function (name, feeDuct) {
 Home.prototype.fillHouse = function () {
   'use strict';
   /* TODO: check/grab rooms from structured screen before falling back on defaults */
-  if (rooms !== undefined) {
-    this.rooms = rooms;
+  if (this.rooms !== undefined) {
+    this.rooms = defaultRooms;
   }
 };
 
@@ -174,33 +179,77 @@ Home.prototype.calculateRoomSqftCosts = function () {
   this.privateCostPerSqft = moneyRound(this.privateCostPerSqft);
 };
 
-Home.prototype.populateAttributeTable = function (tableId, attributes) {
+Home.prototype.populateAttributeTable = function (attributes) {
   'use strict';
-  var attributeTable = document.getElementById(tableId),
+  var attributeTable = document.getElementById(this.attributeTableId),
+    dontPrint = ['attributeTableId'],
     row,
     cell,
     attribute,
     subAttribute,
     rowIndex = attributeTable.rows.length,
     cellIndex;
-  function insertCell(row, index, item) {
-    cell = row.insertCell(index);
-    cell.innerHTML = item;
+  function createValInput(item) {
+    var input = document.createElement('INPUT');
+    input.setAttribute('type', 'text');
+    input.setAttribute('value', item);
+    return input;
   }
-  function insertRow(table, index, cells) {
-    row = table.insertRow(index);
-    for (cellIndex = 0; cellIndex < cells.length; cellIndex += 1) {
-      insertCell(row, cellIndex, cells[cellIndex]);
+  function createValCheckbox(item) {
+    var input = document.createElement('INPUT');
+    input.setAttribute('type', 'checkbox');
+    input.checked = (item === 'true');
+    return input;
+  }
+  function createValCell(row, attrName, attrValue) {
+    var propertyName = attrName;
+    attrName = getDisplayName(attrName);
+    cell = row.insertCell(0);
+    cell.innerHTML = attrName;
+    cell = row.insertCell(1);
+    
+    attrValue = convertItem(propertyName, attrValue);
+    if (EDITABLE_FIELDS.includes(propertyName)) {
+      if (dataType[propertyName].type === 'bool') {
+        attrValue = createValCheckbox(attrValue);
+      } else {
+        attrValue = createValInput(attrValue);
+      }
+      cell.appendChild(attrValue);
+    } else {
+      cell.innerHTML = attrValue;
     }
   }
-  console.log(tableId);
+  function insertRow(table, index, attrName, attrValue) {
+    row = table.insertRow(index);
+    createValCell(row, attrName, attrValue);
+  }
+  
   for (attribute in attributes) {
     if (attributes.hasOwnProperty(attribute)) {
-      if (typeof attributes[attribute] !== 'object') {
-        console.log(attributeTable, tableId, attribute);
-        insertRow(attributeTable, rowIndex, [attribute, attributes[attribute]]);
+      if (!dontPrint.includes(attribute) && (typeof attributes[attribute] !== 'object')) {
+        insertRow(attributeTable, rowIndex, attribute, attributes[attribute]);
         rowIndex += 1;
       }
     }
   }
+};
+
+Home.prototype.getAttributesFromTable = function () {
+  'use strict';
+  var attributeTable = document.getElementById(this.attributeTableId),
+    table,
+    tr,
+    tdName,
+    tdContent;
+  console.log(attributeTable);
+  for (tr = 1; tr < attributeTable.rows.length; tr += 1) {
+    if (attributeTable.rows.hasOwnProperty(tr)) {
+      tdName = getPropertyName(attributeTable.rows[tr].children[0].textContent);
+      tdContent = getText(attributeTable.rows[tr].children[1]);
+      tdContent = parseItem(tdName, tdContent);
+      this[tdName] = tdContent;
+    }
+  }
+  console.log(this);
 };

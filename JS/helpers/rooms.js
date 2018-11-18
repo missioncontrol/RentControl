@@ -1,62 +1,32 @@
-var rooms = {
-  "B-R1": {
-    "sqft": 169,
-    "hasWindow": true,
-    "percentUsable": 1,
-    "occupiedBy": ["Conrad"]
-  },
-  "B-R2": {
-    "sqft": 165,
-    "hasWindow": false,
-    "percentUsable": 1,
-    "occupiedBy": ["A. Kern", "Potluck"]
-  },
-  "B-R3": {
-    "sqft": 151,
-    "hasWindow": false,
-    "percentUsable": 0.8,
-    "occupiedBy": ["Renee"]
-  },
-  "B-R4": {
-    "sqft": 146,
-    "hasWindow": true,
-    "percentUsable": 1,
-    "occupiedBy": ["Hallie"]
-  },
-  "B-R5": {
-    "sqft": 146,
-    "hasWindow": true,
-    "percentUsable": 1,
-    "occupiedBy": ["Jack"]
-  },
-  "C-R1": {
-    "sqft": 191,
-    "hasWindow": true,
-    "percentUsable": 1,
-    "occupiedBy": ["Marco", "Alex C."]
-  },
-  "C-R2": {
-    "sqft": 191,
-    "hasWindow": true,
-    "percentUsable": 1,
-    "occupiedBy": ["Ashley", "Robin"]
-  },
-  "C-R3": {
-    "sqft": 178,
-    "hasWindow": false,
-    "percentUsable": 1,
-    "occupiedBy": ["Ari"]
-  },
-  "C-R4": {
-    "sqft": 166,
-    "hasWindow": true,
-    "percentUsable": 1,
-    "occupiedBy": ["Nick"]
-  },
-  "C-R5": {
-    "sqft": 167,
-    "hasWindow": true,
-    "percentUsable": 1,
-    "occupiedBy": ["Fouad"]
+/*global console, getPropertyName, getText, parseItem */
+
+function createRoomsFromDefaults() {
+  'use strict';
+}
+
+function getRoomsFromTables() {
+  'use strict';
+  var tables = document.getElementsByClassName('room'),
+    table,
+    tr,
+    tdName,
+    tdContent,
+    rooms = {},
+    roomId;
+  for (table in tables) {
+    if (tables.hasOwnProperty(table)) {
+      roomId = tables[table].rows[0].textContent;
+      rooms[roomId] = {};
+      for (tr = 1; tr < tables[table].rows.length; tr += 1) {
+        if (tables[table].rows.hasOwnProperty(tr)) {
+          tdName = getPropertyName(tables[table].rows[tr].children[0].textContent);
+          tdContent = getText(tables[table].rows[tr].children[1]);
+          tdContent = parseItem(tdName, tdContent);
+          rooms[roomId][tdName] = tdContent;
+        }
+      }
+    }
   }
-};
+  console.log(rooms);
+  return rooms;
+}
